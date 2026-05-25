@@ -1,5 +1,13 @@
 AllCops:
   TargetRubyVersion: 3.2
+  NewCops: enable
+  SuggestExtensions: false
+  Exclude:
+    - "lib/generators/**/templates/**/*"
+    - "test/tmp/**/*"
+
+Style/Documentation:
+  Enabled: false
 
 Style/StringLiterals:
   EnforcedStyle: double_quotes

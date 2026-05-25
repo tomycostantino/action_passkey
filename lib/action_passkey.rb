@@ -2,6 +2,7 @@
 
 require_relative "action_passkey/version"
 require_relative "action_passkey/engine"
+require_relative "action_passkey/has_passkeys"
 
 module ActionPasskey
   class Error < StandardError; end
