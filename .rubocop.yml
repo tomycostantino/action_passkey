@@ -5,6 +5,7 @@ AllCops:
   Exclude:
     - "lib/generators/**/templates/**/*"
     - "test/tmp/**/*"
+    - "vendor/bundle/**/*"
 
 Style/Documentation:
   Enabled: false
