@@ -1,3 +1,6 @@
+require "uri"
+require "webauthn"
+
 module PasskeyRelyingParty
   extend ActiveSupport::Concern
 

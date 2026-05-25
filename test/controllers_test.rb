@@ -27,4 +27,9 @@ class ControllersTest < Minitest::Test
     assert_operator PasskeySessionsController, :<, ApplicationController
     assert_operator PasskeySessions::OptionsController, :<, ApplicationController
   end
+
+  def test_passkey_relying_party_template_loads_its_dependencies
+    assert defined?(WebAuthn::RelyingParty), "expected WebAuthn::RelyingParty to be loaded"
+    assert URI.respond_to?(:parse)
+  end
 end
