@@ -28,8 +28,19 @@ module ActionPasskey
         inject_into_class "app/models/user.rb", "User", "  has_passkeys\n"
       end
 
-      def mount_engine
-        route 'mount ActionPasskey::Engine => "/"'
+      def add_routes
+        route <<~RUBY
+          resources :passkeys, only: :create
+          resource :passkey_session, only: :create
+
+          namespace :passkeys do
+            resource :options, only: :create
+          end
+
+          namespace :passkey_sessions do
+            resource :options, only: :create
+          end
+        RUBY
       end
 
       def migration_version
