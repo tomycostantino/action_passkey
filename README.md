@@ -1,39 +1,145 @@
 # ActionPasskey
 
-TODO: Delete this and the text below, and describe your gem
+ActionPasskey generates boilerplate code to easily set up passkey authentication in Rails apps. It generates the Rails models, migration, controllers, routes, helpers, and Stimulus controllers needed to register and authenticate with WebAuthn passkeys.
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/action_passkey`. To experiment with that code, run `bin/console` for an interactive prompt.
+## Requirements
+
+- Rails 7.1 or newer
+- Ruby 3.2 or newer
+- Importmap and Stimulus
+- `bin/rails generate authentication`
+- An application `User` model
 
 ## Installation
 
-TODO: Replace `UPDATE_WITH_YOUR_GEM_NAME_IMMEDIATELY_AFTER_RELEASE_TO_RUBYGEMS_ORG` with your gem name right after releasing it to RubyGems.org. Please do not do it earlier due to security reasons. Alternatively, replace this section with instructions to install your gem from git if you don't plan to release to RubyGems.org.
+Add the gem to your application's Gemfile:
 
-Install the gem and add to the application's Gemfile by executing:
-
-```bash
-bundle add UPDATE_WITH_YOUR_GEM_NAME_IMMEDIATELY_AFTER_RELEASE_TO_RUBYGEMS_ORG
+```ruby
+gem "action_passkey"
 ```
 
-If bundler is not being used to manage dependencies, install the gem by executing:
+Then install it:
 
 ```bash
-gem install UPDATE_WITH_YOUR_GEM_NAME_IMMEDIATELY_AFTER_RELEASE_TO_RUBYGEMS_ORG
+bundle install
+bin/rails generate action_passkey:install
+bin/rails db:migrate
 ```
 
-## Usage
+The generator creates passkey models, controllers, JavaScript files, importmap pins, and routes.
 
-TODO: Write usage instructions here
+## Configuration
+
+The generator creates `config/initializers/action_passkey.rb`:
+
+```ruby
+ActionPasskey.configure do |config|
+  config.origins = ["http://localhost:3000"]
+  config.name = "My Application"
+end
+```
+
+Set `origins` to the browser origins your app is served from. In production this should be your HTTPS origin, for example:
+
+```ruby
+config.origins = ["https://example.com"]
+```
+
+## User Model
+
+The generator adds this macro to `app/models/user.rb` when the file exists:
+
+```ruby
+class User < ApplicationRecord
+  has_passkeys
+end
+```
+
+The macro defines:
+
+```ruby
+has_many :passkeys, dependent: :destroy
+```
+
+If the generator did not add it, add `has_passkeys` manually.
+
+## Routes
+
+The generator adds these routes to `config/routes.rb`:
+
+```ruby
+resources :passkeys, only: :create
+resource :passkey_session, only: :create
+
+namespace :passkeys do
+  resource :options, only: :create
+end
+
+namespace :passkey_sessions do
+  resource :options, only: :create
+end
+```
+
+## View Helpers
+
+Use the generated helpers in your views:
+
+```erb
+<%= add_passkey_button %>
+```
+
+```erb
+<%= sign_in_with_passkey_button %>
+```
+
+`add_passkey_button` starts passkey registration for the current user.
+
+`sign_in_with_passkey_button` starts passkey authentication.
+
+## Generated Files
+
+The install generator creates:
+
+```text
+app/models/passkey.rb
+app/controllers/concerns/passkey_relying_party.rb
+app/controllers/passkeys_controller.rb
+app/controllers/passkeys/options_controller.rb
+app/controllers/passkey_sessions_controller.rb
+app/controllers/passkey_sessions/options_controller.rb
+app/helpers/passkeys_helper.rb
+app/javascript/controllers/passkey_registration_controller.js
+app/javascript/controllers/passkey_authentication_controller.js
+app/javascript/helpers/passkey.js
+app/javascript/helpers/post.js
+app/javascript/helpers/headers.js
+config/initializers/action_passkey.rb
+vendor/javascript/webauthn-json.js
+```
+
+It also creates a `create_passkeys` migration and updates `config/importmap.rb`.
 
 ## Development
 
-After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake test` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
+After checking out the repo, install dependencies:
 
-To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and the created tag, and push the `.gem` file to [rubygems.org](https://rubygems.org).
+```bash
+bin/setup
+```
 
-## Contributing
+Run tests and linting:
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/action_passkey.
+```bash
+bundle exec rake test
+bundle exec rubocop
+```
+
+Build the gem locally:
+
+```bash
+gem build action_passkey.gemspec
+```
 
 ## License
 
-The gem is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).
+The gem is available as open source under the terms of the MIT License.
