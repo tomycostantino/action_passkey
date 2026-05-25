@@ -9,6 +9,10 @@ AllCops:
 Style/Documentation:
   Enabled: false
 
+Naming/PredicatePrefix:
+  AllowedMethods:
+    - has_passkeys
+
 Style/StringLiterals:
   EnforcedStyle: double_quotes
 
