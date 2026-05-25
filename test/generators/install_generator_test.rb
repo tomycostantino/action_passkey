@@ -12,6 +12,10 @@ class ActionPasskeyInstallGeneratorTest < Rails::Generators::TestCase
     prepare_destination
     FileUtils.mkdir_p File.join(destination_root, "config")
     File.write File.join(destination_root, "config/routes.rb"), "Rails.application.routes.draw do\nend\n"
+    File.write File.join(destination_root, "config/importmap.rb"), <<~RUBY
+      pin "application"
+      pin_all_from "app/javascript/controllers", under: "controllers"
+    RUBY
   end
 
   def test_install_generator_creates_initializer
@@ -75,5 +79,29 @@ class ActionPasskeyInstallGeneratorTest < Rails::Generators::TestCase
     assert_file "app/javascript/helpers/passkey.js", /assertPasskeySupported/
     assert_file "app/javascript/helpers/post.js", /POST \$\{path\} failed/
     assert_file "app/javascript/helpers/headers.js", /X-CSRF-Token/
+  end
+
+  def test_install_generator_creates_host_app_passkey_controllers_and_helper
+    run_generator
+
+    assert_file "app/controllers/concerns/passkey_relying_party.rb", /module PasskeyRelyingParty/
+    assert_file "app/controllers/passkeys_controller.rb", /class PasskeysController < ApplicationController/
+    assert_file "app/controllers/passkeys/options_controller.rb",
+                /class Passkeys::OptionsController < ApplicationController/
+    assert_file "app/controllers/passkey_sessions_controller.rb",
+                /class PasskeySessionsController < ApplicationController/
+    assert_file "app/controllers/passkey_sessions/options_controller.rb",
+                /class PasskeySessions::OptionsController < ApplicationController/
+    assert_file "app/helpers/passkeys_helper.rb", /def add_passkey_button/
+  end
+
+  def test_install_generator_configures_importmap_for_passkey_javascript
+    run_generator
+
+    assert_file "config/importmap.rb" do |importmap|
+      assert_match(%r{pin_all_from "app/javascript/helpers", under: "helpers"}, importmap)
+      assert_match(%r{pin "@github/webauthn-json", to: "webauthn-json.js"}, importmap)
+    end
+    assert_file "vendor/javascript/webauthn-json.js", %r{@github/webauthn-json}
   end
 end
