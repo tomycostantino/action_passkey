@@ -7,7 +7,15 @@ class TestActionPasskey < Minitest::Test
     refute_nil ::ActionPasskey::VERSION
   end
 
-  def test_it_does_something_useful
-    assert false
+  def test_configuration_only_exposes_origins_and_name
+    configuration = ActionPasskey::Configuration.new
+
+    assert_respond_to configuration, :origins
+    assert_respond_to configuration, :origins=
+    assert_respond_to configuration, :name
+    assert_respond_to configuration, :name=
+    refute_respond_to configuration, :origin
+    refute_respond_to configuration, :after_authentication_path
+    refute_respond_to configuration, :user_class_name
   end
 end
