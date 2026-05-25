@@ -4,7 +4,7 @@ require "test_helper"
 require "rails/generators/test_case"
 require "generators/action_passkey/install/install_generator"
 
-class ActionPasskeyInstallGeneratorTest < Rails::Generators::TestCase
+class ActionPasskeyInstallGeneratorTest < Rails::Generators::TestCase # rubocop:disable Metrics/ClassLength
   tests ActionPasskey::Generators::InstallGenerator
   destination File.expand_path("../tmp/generators", __dir__)
 
@@ -103,5 +103,33 @@ class ActionPasskeyInstallGeneratorTest < Rails::Generators::TestCase
       assert_match(%r{pin "@github/webauthn-json", to: "webauthn-json.js"}, importmap)
     end
     assert_file "vendor/javascript/webauthn-json.js", %r{@github/webauthn-json}
+  end
+
+  def test_install_generator_does_not_duplicate_routes
+    run_generator
+    run_generator
+
+    assert_file "config/routes.rb" do |routes|
+      assert_equal 1, routes.scan("resources :passkeys, only: :create").size
+      assert_equal 1, routes.scan("resource :passkey_session, only: :create").size
+      assert_equal 1, routes.scan("namespace :passkeys do").size
+      assert_equal 1, routes.scan("namespace :passkey_sessions do").size
+    end
+  end
+
+  def test_install_generator_does_not_duplicate_importmap_pins
+    run_generator
+    run_generator
+
+    assert_file "config/importmap.rb" do |importmap|
+      assert_equal 1, importmap.scan(%r{pin_all_from "app/javascript/helpers", under: "helpers"}).size
+      assert_equal 1, importmap.scan(%r{pin "@github/webauthn-json", to: "webauthn-json.js"}).size
+    end
+  end
+
+  def test_gem_does_not_ship_obsolete_namespaced_host_app_files
+    assert_empty Dir.glob(File.expand_path("../../app/controllers/action_passkey/**/*.rb", __dir__))
+    assert_empty Dir.glob(File.expand_path("../../app/controllers/concerns/action_passkey/**/*.rb", __dir__))
+    assert_empty Dir.glob(File.expand_path("../../app/helpers/action_passkey/**/*.rb", __dir__))
   end
 end

@@ -2,12 +2,13 @@
 
 require "test_helper"
 require "action_view"
-require_relative "../../app/helpers/action_passkey/passkeys_helper"
+
+load File.expand_path("../../lib/generators/action_passkey/install/templates/passkeys_helper.rb", __dir__)
 
 class PasskeysHelperTest < Minitest::Test
   include ActionView::Helpers::TagHelper
   include ActionView::Context
-  include ActionPasskey::PasskeysHelper
+  include PasskeysHelper
 
   def test_add_passkey_button_renders_registration_controller_button
     html = add_passkey_button

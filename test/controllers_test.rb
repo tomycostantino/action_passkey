@@ -9,17 +9,22 @@ unless defined?(ApplicationController)
   end
 end
 
-require_relative "../app/controllers/concerns/action_passkey/passkey_relying_party"
-require_relative "../app/controllers/action_passkey/passkeys_controller"
-require_relative "../app/controllers/action_passkey/passkeys/options_controller"
-require_relative "../app/controllers/action_passkey/passkey_sessions_controller"
-require_relative "../app/controllers/action_passkey/passkey_sessions/options_controller"
+load File.expand_path("../lib/generators/action_passkey/install/templates/passkey_relying_party.rb", __dir__)
+load File.expand_path("../lib/generators/action_passkey/install/templates/passkeys_controller.rb", __dir__)
+module Passkeys; end
+load File.expand_path("../lib/generators/action_passkey/install/templates/passkeys_options_controller.rb", __dir__)
+load File.expand_path("../lib/generators/action_passkey/install/templates/passkey_sessions_controller.rb", __dir__)
+module PasskeySessions; end
+load File.expand_path(
+  "../lib/generators/action_passkey/install/templates/passkey_sessions_options_controller.rb",
+  __dir__
+)
 
 class ControllersTest < Minitest::Test
   def test_passkey_controllers_inherit_from_application_controller
-    assert_operator ActionPasskey::PasskeysController, :<, ApplicationController
-    assert_operator ActionPasskey::Passkeys::OptionsController, :<, ApplicationController
-    assert_operator ActionPasskey::PasskeySessionsController, :<, ApplicationController
-    assert_operator ActionPasskey::PasskeySessions::OptionsController, :<, ApplicationController
+    assert_operator PasskeysController, :<, ApplicationController
+    assert_operator Passkeys::OptionsController, :<, ApplicationController
+    assert_operator PasskeySessionsController, :<, ApplicationController
+    assert_operator PasskeySessions::OptionsController, :<, ApplicationController
   end
 end
