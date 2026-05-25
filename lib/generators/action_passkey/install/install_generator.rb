@@ -18,6 +18,15 @@ module ActionPasskey
         template "passkey.rb", "app/models/passkey.rb"
       end
 
+      def copy_javascript_files
+        copy_file "passkey_registration_controller.js", "app/javascript/controllers/passkey_registration_controller.js"
+        copy_file "passkey_authentication_controller.js",
+                  "app/javascript/controllers/passkey_authentication_controller.js"
+        copy_file "passkey.js", "app/javascript/helpers/passkey.js"
+        copy_file "post.js", "app/javascript/helpers/post.js"
+        copy_file "headers.js", "app/javascript/helpers/headers.js"
+      end
+
       def copy_passkey_migration
         migration_template "create_passkeys.rb", "db/migrate/create_passkeys.rb"
       end
