@@ -38,7 +38,19 @@ class ActionPasskeyInstallGeneratorTest < Rails::Generators::TestCase
       assert_match(/t.string :external_id, null: false/, migration)
       assert_match(/add_index :passkeys, :external_id, unique: true/, migration)
     end
-    assert_file "config/routes.rb", %r{mount ActionPasskey::Engine => "/"}
+  end
+
+  def test_install_generator_creates_explicit_routes
+    run_generator
+
+    assert_file "config/routes.rb" do |routes|
+      assert_match(/resources :passkeys, only: :create/, routes)
+      assert_match(/resource :passkey_session, only: :create/, routes)
+      assert_match(/namespace :passkeys do\n    resource :options, only: :create\n  end/, routes)
+      assert_match(/namespace :passkey_sessions do\n    resource :options, only: :create\n  end/, routes)
+      refute_match(/to: "action_passkey/, routes)
+      refute_match(/mount ActionPasskey::Engine/, routes)
+    end
   end
 
   def test_install_generator_adds_has_passkeys_to_user_model
@@ -53,5 +65,15 @@ class ActionPasskeyInstallGeneratorTest < Rails::Generators::TestCase
     assert_file "app/models/user.rb" do |user_model|
       assert_match(/class User < ApplicationRecord\n  has_passkeys\nend/, user_model)
     end
+  end
+
+  def test_install_generator_creates_passkey_javascript_files
+    run_generator
+
+    assert_file "app/javascript/controllers/passkey_registration_controller.js", /async register\(\)/
+    assert_file "app/javascript/controllers/passkey_authentication_controller.js", /async authenticate\(\)/
+    assert_file "app/javascript/helpers/passkey.js", /assertPasskeySupported/
+    assert_file "app/javascript/helpers/post.js", /POST \$\{path\} failed/
+    assert_file "app/javascript/helpers/headers.js", /X-CSRF-Token/
   end
 end
