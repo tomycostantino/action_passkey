@@ -22,6 +22,12 @@ module ActionPasskey
         migration_template "create_passkeys.rb", "db/migrate/create_passkeys.rb"
       end
 
+      def add_has_passkeys_to_user_model
+        return unless File.exist?(File.join(destination_root, "app/models/user.rb"))
+
+        inject_into_class "app/models/user.rb", "User", "  has_passkeys\n"
+      end
+
       def mount_engine
         route 'mount ActionPasskey::Engine => "/"'
       end

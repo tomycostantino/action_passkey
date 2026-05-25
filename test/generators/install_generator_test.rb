@@ -40,4 +40,18 @@ class ActionPasskeyInstallGeneratorTest < Rails::Generators::TestCase
     end
     assert_file "config/routes.rb", %r{mount ActionPasskey::Engine => "/"}
   end
+
+  def test_install_generator_adds_has_passkeys_to_user_model
+    FileUtils.mkdir_p File.join(destination_root, "app/models")
+    File.write File.join(destination_root, "app/models/user.rb"), <<~RUBY
+      class User < ApplicationRecord
+      end
+    RUBY
+
+    run_generator
+
+    assert_file "app/models/user.rb" do |user_model|
+      assert_match(/class User < ApplicationRecord\n  has_passkeys\nend/, user_model)
+    end
+  end
 end
